@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <title>Lisp Chronicles/Functional Abstractions</title>
+  </head>
+
+  <body>
+
+    <h1>Functional Abstractions</h1>
+
+    <p class="published">2017-February-10</p>
+    
+Lisp is the earliest programming language to treat functions as first class entities. Functions in Lisp have the same status as other types of data like strings and numbers - they have a literal representation, they can be passed around as data, they can be embedded in other data structures and new functions can be created dynamically as the program executes. Functions are also the primary means of abstraction in Lisp.
+
+This post is about the versatility and power of first class functions. We start from the very basics. We will learn how to generate new functions as the program runs. We will use functions to abstract control flow - something that can be done concisely and efficiently only by first-class functions. We will also use functions to build abstractions in the more traditional sense - data structures that can hide the details of their implementation. We give an accurate definition of "higher-order programming" and explain how it eases the development of generic software components.
+<blockquote><strong>Note</strong>: The sample code is in <a href="https://clojure.org/" target="_blank">Clojure</a> but can be easily ported to any modern Lisp. Some of the functions that we write may have efficient native implementations in your favorite Lisp - please consult the language manual.</blockquote>
+<h3>Basics</h3>
+Most languages provide a built-in facility, in the form of special syntax, to define functions. For example, this is how you would define a function in JavaScript:
+
+[code language="javascript"]
+function add2(n) {
+  return n + 2
+}
+[/code]
+
+Instead of special syntax, Lisps have operators called <em>special forms</em> that are used for doing compile-time stuff like introducing a variable name into the program. Most Lisps have a special form for defining and naming functions. In Clojure it is known as <em>defn</em> (for <em>define function</em>).
+
+Here is the <em>add2</em> function rewritten in Clojure:
+
+[code language="clojure"]
+(defn add2
+  [n]
+  (+ n 2))
+[/code]
+
+Now we can call <em>add2</em> from another function or directly from the REPL:
+
+[code language="clojure"]
+(add2 10)
+;;=> 12
+[/code]
+<blockquote><strong>Note:</strong> In the code examples <em>;;=></em> is used to identify results of evaluating an expression and <em>;;-></em> to identify values produced by a side-effect, like printing a value to the standard output.</blockquote>
+We can "see" the internal representation of the <em>add2</em> function by typing its name at the REPL. This is possible because a function is just another object recognized by the language:
+
+[code language="clojure"]
+add2
+;;=> #<user$add2 user$add2@515d06af>
+[/code]
+
+Like literal strings and numbers, we can write literal functions. A function literal in Lisp is known as a <em>lambda expression</em>. Clojure have the special form <em>fn</em> for introducing function literals. <em>Fn</em> takes a vector of parameters and zero or more expressions which become the body of the function. The expression shown below is equivalent to the <em>add2 </em>function we defined earlier:
+
+[code language="clojure"]
+(fn [n] (+ n 2))
+[/code]
+
+A function literal can be invoked by placing it in the function call position:
+
+[code language="clojure"]
+((fn [n] (+ n 2)) 10)
+;;=> 12
+[/code]
+
+Function literals are so prevalent in Lisp programs that Clojure has a shorter notation for them. This is the <em>#()</em> form which allows for the argument list to be omitted. The parameters are referred to by their position prefixed by <em>%</em>, i.e, the first parameter is referred in the body as <em>%1</em>, the second parameter is referred as <em>%2</em> and so on. The <em>%</em> symbol without the parameter position will refer to the only parameter of a single argument function.
+
+Let us rewrite the previous example using the shorter notation:
+
+[code language="clojure"]
+(#(+ % 2) 10)
+;;=> 12
+[/code]
+
+Now that we can write function literals, we can do anything with them we would normally do with other types of data. Functions can be passed around as arguments, they can become return values or they can be packaged into data structures. At the bare minimum, we can bind the function object to a variable name:
+
+[code language="clojure"]
+;; This is the same as our first defn of `add2`.
+(def add2 #(+ % 2))
+[/code]
+<blockquote><strong>Tidbit</strong>: Clojure and Scheme have a single <em>namespace</em> (or binding environment) for all types of variables, i.e if we redefine <em>add2</em> the reference to the function object will be lost. Common Lisp, on the other hand, treats variables bound to functions specially. They are bound in a dedicated namespace. So we can have a function named <em>add2</em> and an integer variable named <em>add2</em> in the same program. A Lisp with a single namespace is known as a <em>Lisp-1</em>. Clojure and Scheme belong to this category. Common Lisp is a <em>Lisp-n</em> as there are many namespaces.</blockquote>
+<h3>Functions as arguments</h3>
+Once we have functions as first class objects, we can pass them as arguments to other functions. Many built-in Lisp functions take functional arguments, two of the most frequently used are <em>apply</em> and <em>map</em>.
+
+The first argument of <em>apply</em> must be a function object and the last argument must be a list (or in Clojure, the more general <em><a href="https://clojure.org/reference/sequences" target="_blank">sequence</a></em>). <em>Apply</em> prefix all but the first argument to this list. It then calls the function, passing it the list of arguments.
+
+[code language="clojure"]
+(apply + 1 2 [3 4 5])
+;;=> 15
+[/code]
+
+In the next program, <em>apply</em> is used to define a function that return the sum of all positive even numbers from a sequence:
+
+[code language="clojure"]
+(defn sum-pos-even
+  [xs]
+  (apply + (remove #(or (neg? %) (odd? %)) xs)))
+
+(sum-pos-even [1 2 3 4 5])
+;;=> 6
+
+(sum-pos-even [1 -2 3 4 5])
+;;=> 4
+[/code]
+
+Programmers frequently want to do "something" to a list of things and get back a list of results. The function <em>map</em> is designed for this purpose. The "something" that needs to be done to each element is represented as a function. For example, if we want to add <em>2</em> to all numbers from 1-5, we call <em>map</em> as shown below:
+
+[code language="clojure"]
+(map add2 [1 2 3 4 5])
+;;=> (3 4 5 6 7)
+[/code]
+
+<em>Map</em> takes an arbitrary number of lists/sequences for processing. The function passed to <em>map</em> should accept as many arguments as there are lists. In the next example, we define the function <em>zip2</em>. It takes two sequences and return the sequence of corresponding pairs.
+
+[code language="clojure"]
+(defn zip2
+  [xs ys]
+  (map #(list %1 %2) xs ys))
+
+(zip2 [:a :b :c] '(1 2 3))
+;;=> ((:a 1) (:b 2) (:c 3))
+[/code]
+<h3>Functions as return values</h3>
+Function calls can result in function values. This naturally leads to functions that act as "generators" of functions. In the following program we define the function <em>make-sort</em> which can be configured with a comparison operation to return a new sorting routine.
+
+[code language="clojure"]
+(defn make-sort
+  [cmp]
+  #(sort cmp %))
+
+(def reverse-sort (make-sort >))
+
+(reverse-sort [1 2 3 4 5])
+;;=> (5 4 3 2 1)
+
+(reverse-sort [2 3 1 4 2])
+;;=> (4 3 2 2 1)
+
+(def sort-by-first (make-sort #(< (first %1) (first %2))))
+(sort-by-first [[10 2] [3 5] [8 1]])
+;;=> ([3 5] [8 1] [10 2])
+[/code]
+<blockquote><strong>Note</strong>: If you want to sort any type of data that implements the Java <em><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Comparable.html" target="_blank">Comparable</a></em> interface, call <em>make-sort</em> with the <em>compare</em> function:
+
+[code language="clojure"]
+(def sort-by-first (make-sort #(compare (first %1) (first %2))))
+
+(sort-by-first [["x" 2] ["d" 5] ["a" 1]])
+;;=> (["a" 1] ["d" 5] ["x" 2])
+[/code]</blockquote>
+<h3>Functions as data structures</h3>
+The function returned by <em>make-sort</em> gets a reference to the <em>cmp</em> argument. This reference is preserved across calls. This is possible because the function packages and holds on to the environment it was defined in. All variable bindings active at the time of calling <em>make-sort</em> will be perpetually available to the new function. In short, its defining environment is "closed over". Such functions are thus known as <em>closures</em>. Closures can be used to simulate objects with local state. In the next example, we use closures to define a simple <em>point</em> object with two properties - the <em>x</em> and <em>y</em> locations:
+
+[code language="clojure"]
+(defn make-point
+  [x y]
+  #(case %
+     :xloc x
+     :yloc y))
+
+(def p1 (make-point 10 20))
+(def p2 (make-point 100 340))
+(p1 :xloc)
+;;=> 10
+
+(p2 :yloc)
+;;=> 340
+
+(defn distance
+  [point1 point2]
+  ; `sqrt` and `pow` are static methods defined
+  ; in the Java Math class.
+  (Math/sqrt
+   (+ (Math/pow (- (point2 :xloc) (point1 :xloc)) 2)
+      (Math/pow (- (point2 :yloc) (point1 :yloc)) 2))))
+
+(distance p1 p2)
+;;=> 332.41540277189324
+[/code]
+
+The main purpose of abstraction in programming is to help structure systems in a modular way. Then much of the program can be written independent of the implementation details of data objects being manipulated. A complex number is an example of a data object that can have multiple internal representations. It can be represented in rectangular form (real part and imaginary part) or polar form (magnitude and angle). Object oriented programs will depend on interfaces or abstract base classes to accommodate multiple representations of complex numbers in the same system. It is possible to build an equally powerful abstraction using closures, as demonstrated by the next program.
+
+[code language="clojure"]
+(ns complex)
+
+(defn make-rectangular
+  [real imag]
+  (let [magnitude (Math/sqrt
+                    (+ (Math/pow real 2)
+                       (Math/pow imag 2)))
+        angle (Math/atan2 imag real)]
+    #(case %
+       :real real
+       :imag imag
+       :magnitude magnitude
+       :angle angle)))
+
+(defn make-polar
+  [magnitude angle] ; angle in radians
+  (let [real (* magnitude (Math/cos angle))
+        imag (* magnitude (Math/sin angle))]
+    #(case %
+       :magnitude magnitude
+       :angle angle
+       :real real
+       :imag imag)))
+
+(defn add
+  [c1 c2]
+  (make-rectangular
+    (+ (c1 :real) (c2 :real))
+    (+ (c1 :imag) (c2 :imag))))
+
+(defn sub
+  [c1 c2]
+  (make-rectangular
+    (- (c1 :real) (c2 :real))
+    (- (c1 :imag) (c2 :imag))))
+
+(defn mul
+  [c1 c2]
+  (make-polar
+    (* (c1 :magnitude) (c2 :magnitude))
+    (+ (c1 :angle) (c2 :angle))))
+
+(defn div
+  [c1 c2]
+  (make-polar
+    (/ (c1 :magnitude) (c2 :magnitude))
+    (- (c1 :angle) (c2 :angle))))
+
+(defn repr
+  "Return a map representation of a complex number."
+  [c]
+  {:real (c :real)
+   :imag (c :imag)
+   :magnitude (c :magnitude)
+   :angle (c :angle)})
+[/code]
+
+The operations - <em>add</em>, <em>sub</em>, <em>mul</em> and <em>div</em> - are not concerned with the actual representation of complex numbers. They can work with multiple representations that respond to a basic set of messages.
+
+The following REPL session demonstrates the usage of the complex number type:
+
+[code language="clojure"]
+user> (clojure.main/load-script "complex.clj")
+user> (use '[complex :as c])
+
+user> (def p (c/make-polar 56 0.47))
+user> (def r (c/make-rectangular 49.90, 25.42))
+user> (c/repr p)
+{:real 49.92782413893842, :imag 25.361631981227823, :magnitude 56, :angle 0.47}
+user> (c/repr r)
+{:real 49.9, :imag 25.42, :magnitude 56.00166426098424, :angle 0.47115425605142663}
+
+user> (c/repr (c/add (make-rectangular 3 2) (make-rectangular 1 4)))
+{:real 4, :imag 6, :magnitude 7.211102550927978, :angle 0.982793723247329}
+
+user> (c/repr (c/mul p (make-rectangular 3 2)))
+{:real 99.06020845435961, :imag 175.94054422156032, :magnitude 201.9108714259834, :angle 1.0580026035475676}
+[/code]
+<h3>Higher-order programming</h3>
+In the previous sections, we learned important programming techniques involving first class functions. We have explored functions that take other functions as arguments, function-building-functions and functions that close-over their local state. These programming techniques are collectively known as <em>higher-order programming</em>. The name comes from the concept of <em>order</em> of a function. A function that take no function arguments is of first-order, a function that takes at-least one first-order function as argument is of second-order and so on. Higher-order programming simply means functions can be of any order.
+
+One interesting implication of higher-order programming is that it enables us to build abstractions to control program flow. This is achieved by exploiting a function's ability to delay the execution of any program statement. Here is a customized version of the <em>if</em> expression. Our version of <em>if</em> will execute its <em>consequent</em> part only if the <em>test</em> expression returns a positive integer.
+
+[code language="clojure"]
+(defn ifpos
+  [test consequent alternative]
+  (if (pos? test) (consequent) (alternative)))
+
+(ifpos (+ 0 1) #(println "hey!") #(println "bye!"))
+;;=> hey!
+
+(ifpos (+ 0 -1) #(println "hey!") #(println "bye!"))
+;;=> bye!
+[/code]
+
+We can also build custom looping constructs like the one shown below:
+
+[code language="clojure"]
+
+(defn times
+  [n dothis]
+  (when (pos? n)
+    (loop [i 0]
+      (when (< i n)
+       (dothis i)
+       (recur (inc i))))))  
+
+(times 3 #(println %))
+;;-> 0
+     1
+     2
+[/code]
+
+As I said in the introduction, the ability to specify efficient control abstractions in a compact way is a speciality of higher-order programming.
+
+Higher-order abstractions also tend to be extremely generic. This enable us to apply the solution to a specific problem in many different contexts. As a simple example, think about a function to find the sum of all integers in a sequence.
+
+[code language="clojure"]
+(defn sumseq
+  [xs]
+  (if (seq xs)
+    (+ (first xs) (sumseq (rest xs)))
+    0))
+
+(sumseq [1 2 3 4 5])
+;;=> 15
+[/code]
+
+The function has two constants in its definition - the number zero (0) and the plus (+) function. Zero is the neutral element for the plus operation. (Any number <em>plus</em> zero is that number itself). If we abstract out these two entities and make them the function's parameters, then the function becomes more general, making possible combinations of any neutral element and operation. Let us call this new function <em>fold-right</em> because it "folds" a sequence into a single value. The <em>right</em> prefix denotes the function's associativity.
+
+[code language="clojure"]
+(defn fold-right
+  [xs opr n]
+  (if (seq xs)
+    (opr (first xs) (fold-right (rest xs) opr n))
+    n))
+
+(fold-right [1 2 3 4 5] + 0)
+;;=> 15
+
+(fold-right [1 2 3 4 5] * 1)
+;;=> 120
+[/code]
+<h3>Conclusion</h3>
+Lisp has first-class functions and the ability to manipulate programs as data. This makes it a programming language of unlimited possibilities. In the context of Lisp, "abstractions" has a wider meaning. It is not just about data abstractions, but also about the ability to abstract over control flow and syntax. This post has just skimmed over data and control abstractions. We didn't even mention "syntactic abstractions" until now!  Let that be the topic of a future post.
+<h3>References</h3>
+<ol>
+	<li><a href="https://www.info.ucl.ac.be/~pvr/book.html">Concepts, Techniques, and Models of Computer Programming</a></li>
+	<li><a href="https://mitpress.mit.edu/sicp/">Structure and Interpretation of Computer Programs</a></li>
+</ol>
+<code>[twitter-follow screen_name='lispchronicles']</code>
+
+    <hr></hr>
+    <p align="left">
+      <a href="mailto:vijay.the.lisper@gmail.com">Comments</a> | <a href="index.html">Home</a>
+    </p>
+    
+  </body>
+</html>

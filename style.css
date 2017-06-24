@@ -4,6 +4,10 @@ body {
     font-size: 18px;
 }
 
+ol {
+    width: 60%;
+}
+
 h1, h2, h3 {
     margin: 0px;
     color: #191919;
