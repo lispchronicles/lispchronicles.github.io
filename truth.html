@@ -18,7 +18,7 @@
 
     <p>Conditional expressions has the mandate on distinguishing those objects that should be treated as the logical <em>true</em> and <em>false</em> values. If you have programmed in a language like Java,
       you would expect only constants like <em>true</em> and <em>false</em> to be recognized as logical values. This need not be the case in Lisp. A Lisp may use more than one type of object to
-      represent <em>true</em> and <em>false</em>. This can be a source of confusion for beginners and sometimes even for experienced Lispers.</p>
+      represent <em>true</em> and <em>false</em>. This can be a source of confusion for novice (or sometimes even for experienced) Lispers.</p>
 
     <p>This post details on how three popular flavors of Lisp &ndash; <a href="https://en.wikipedia.org/wiki/Common_Lisp" target="_blank">Common Lisp</a>,
       <a href="https://en.wikipedia.org/wiki/Scheme_(programming_language)" target="_blank">Scheme</a>
@@ -28,41 +28,40 @@
     <h3>Common Lisp</h3>
     <p>In Common Lisp, the symbol <em>nil</em> is used to represent both the empty list and Boolean <em>false</em>. An empty list may, of course, also be written as <em>()</em> and evaluates to the same object
       as <em>nil</em>. All values other than <em>nil</em> (i.e the empty list) are considered <em>true</em>. Common Lisp conventionally uses the constant <em>t</em> to stand for <em>true</em>,
-      when no other value makes more sense. The following REPL session shows all the various forms logical values can assume in Common Lisp:</p>
+      when no other value makes more sense. The following <a href="https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop" target="_blank">REPL</a> session shows all the various forms logical values can assume in Common Lisp:</p>
 
     <div class="prog">
       <pre><code>
 clisp> (<span class="kw">if</span> nil 'yes 'no)
-=> no
+<span class="comment">;; no</span>
 
 <span class="comment">; The empty list and nil are represented by the same object.</span>
 clisp> (<span class="kw">if</span> '() 'yes 'no)
-=> no
+<span class="comment">;; no</span>
 
 <span class="comment">; The symbol literal nil also evaluates to logical false.</span>
 clisp> (<span class="kw">if</span> 'nil 'yes 'no)
-=> no
+<span class="comment">;; no</span>
 
 <span class="comment">; All values other than nil evaluates to logical truth,
 ; though the constant `t` is its canonical representation.</span>
 clisp> (<span class="kw">if</span> 100 'yes 'no)
-=> yes
+<span class="comment">;; yes</span>
 clisp> (<span class="kw">if</span> t 'yes 'no)
-=> yes
+<span class="comment">;; yes</span>
       </code></pre>
     </div>
     
-    <p><strong>Note</strong>: In code examples, <em>clisp></em>, <em>scheme></em> and <em>clojure></em> stands for the input prompt of Common Lisp, Scheme and Clojure REPLs respectively. The value of an expression
-	is preceded by the <em>=></em> symbol.</p>
+    <p><strong>Note</strong>: In code examples, <em>clisp></em>, <em>scheme></em> and <em>clojure></em> stands for the input prompt of Common Lisp, Scheme and Clojure REPLs respectively.</p>
 
     <p>The Common Lisp language specification requires <em>nil</em> to be the default value returned by conditional expressions.</p>
 
     <div class="prog">
       <pre><code>
 clisp> (<span class="kw">if</span> (< 5 4) 'ok)
-=> nil
+<span class="comment">;; nil</span>
 clisp> (<span class="kw">when</span> (< 5 4) 'ok)
-=> nil
+<span class="comment">;; nil</span>
       </pre></code>
     </div>
 
@@ -78,17 +77,17 @@ clisp> (<span class="kw">defun</span> flistp (alist)
            (listp (car alist))))
 
 clisp> (<span class="kw">if</span> (flistp '()) 'yes 'no)
-=> no
+<span class="comment">;; no</span>
 clisp> (<span class="kw">if</span> (flistp '(1 2 3)) 'yes 'no)
-=> no
+<span class="comment">;; no</span>
 clisp> (<span class="kw">if</span> (flistp '((1 2) 3)) 'yes 'no)
-=> yes
+<span class="comment">;; yes</span>
 
 <span class="comment">;; The predicate 'listp' returns true for
 ;; the empty list, despite it being the logical
 ;; false value!</span>
 clisp> (<span class="kw">if</span> (flistp '(() 1 2 3)) 'yes 'no)
-=> yes
+<span class="comment">;; yes</span>
       </code></pre>
     </div>
 
@@ -105,19 +104,19 @@ clisp> (<span class="kw">defun</span> flistp (alist)
            (listp (car alist))))
 
 clisp> (<span class="kw">if</span> (flistp '()) 'yes 'no)
-=> no
+<span class="comment">;; no</span>
 clisp> (<span class="kw">if</span> (flistp '(1 2 3)) 'yes 'no)
-=> no
+<span class="comment">;; no</span>
 clisp> (<span class="kw">if</span> (flistp '((1 2) 3)) 'yes 'no)
-=> yes
+<span class="comment">;; yes</span>
 clisp> (<span class="kw">if</span> (flistp '(() 1 2 3)) 'yes 'no)
-=> yes
+<span class="comment">;; yes</span>
       </code></pre>
     </div>
 
     <p>Now you might be wondering why the designers of Common Lisp have overloaded <em>nil</em>  with three different meanings &ndash; the empty list, the <em>false</em> value and the symbol <em>nil</em>.
       The reason lies deep in the long history of Lisp. Almost from the very beginning, Lisp used the symbol <em>nil</em> as the special object that marked the end of a list. The same value was used to check
-      for false values returned by predicates - an "unfortunate and lighthearted decision" according to <a href="https://en.wikipedia.org/wiki/John_McCarthy_(computer_scientist)">John McCarthy</a>.
+      for false values returned by predicates &ndash; an "unfortunate and lighthearted decision" according to <a href="https://en.wikipedia.org/wiki/John_McCarthy_(computer_scientist)" target="_blank">John McCarthy</a>.
       As Common Lisp aimed to unify and standardize the popular Lisps that existed at the beginning of 1980s, it did not deviate too much from the fundamental way logical values were represented and interpreted.
       As Lisp is mostly about list processing, using the same object to represent <em>false</em> and the empty list led not just to optimal resource usage but also to some economy in code.
       As an example of this, consider the following function that returns the first sublist from its list argument:</p>
@@ -131,9 +130,9 @@ clisp> (<span class="kw">defun</span> fsublist (alist)
            (t (fsublist (cdr alist)))))
 
 clisp> (fsublist '(1 2 (3 4) (5)))
-=> (3 4)
+<span class="comment">;; (3 4)</span>
 clisp> (fsublist '(1 2 3 4 5))
-=> nil
+<span class="comment">;; nil</span>
       </code></pre>
     </div>
 
@@ -143,10 +142,10 @@ clisp> (fsublist '(1 2 3 4 5))
       <pre><code>
 clisp> (<span class="kw">let</span> ((s (fsublist '(1 2 (3 4) (5)))))
          (<span class="kw">or</span> s 'no-sublists))
-=> (3 4)
+<span class="comment">;; (3 4)</span>
 clisp> (<span class="kw">let</span> ((s (fsublist '(1 2 3 4 5))))
          (<span class="kw">or</span> s 'no-sublists))
-=> no-sublists
+<span class="comment">;; no-sublists</span>
       </code></pre>
     </div>
 
@@ -166,17 +165,17 @@ clisp> (<span class="kw">let</span> ((s (fsublist '(1 2 3 4 5))))
     <div class="prog">
       <pre><code>
 scheme> (<span class="kw">if</span> '() 'yes 'no)
-=> yes
+<span class="comment">;; yes</span>
 scheme> (<span class="kw">if</span> #f 'yes 'no)
-=> no
+<span class="comment">;; no</span>
 scheme> (> 5 4)
-=> #t
+<span class="comment">;; #t</span>
 scheme> (< 5 4)
-=> #f
+<span class="comment">;; #f</span>
 scheme> (<span class="kw">and</span> (> 5 4) 2)
-=> 2
+<span class="comment">;; 2</span>
 scheme> (<span class="kw">and</span> (> 5 4) (= 2 1))
-=> #f
+<span class="comment">;; #f</span>
       </code></pre>
     </div>
 
@@ -185,9 +184,9 @@ scheme> (<span class="kw">and</span> (> 5 4) (= 2 1))
     <div class="prog">
       <pre><code>
 scheme> (<span class="kw">if</span> (< 5 4) 'ok)
-=> <an-implementation-dependent-value>
+<span class="comment">;; &lt;an-implementation-dependent-value&gt;</span>
 scheme> (<span class="kw">if</span> (> 5 4) 'ok)
-=> ok
+<span class="comment">;; ok</span>
       </code></pre>
     </div>
     
@@ -205,15 +204,15 @@ scheme> (<span class="kw">define</span> (flist? alist)
                (list? (car alist))))
 
 scheme> (<span class="kw">if</span> (flist? '()) 'yes 'no)
-=> no
+<span class="comment">;; no</span>
 scheme> (<span class="kw">if</span> (flist? '(1 2 3)) 'yes 'no)
-=> no
+<span class="comment">;; no</span>
 scheme> (<span class="kw">if</span> (flist? '((1 2) 3)) 'yes 'no)
-=> yes
+<span class="comment">;; yes</span>
       </code></pre>
     </div>
     
-    <p><strong>Note</strong>: The Scheme naming convention is to end predicate names with a question mark (?). This convention is also followed in Clojure.</p>
+    <p><strong>Note</strong>: The Scheme naming convention is to end predicate names with a question mark (?). This convention is also followed by Clojure.</p>
     
     <p>The following implementation of <em>flist?</em> is not portable because a Scheme implementation is free to use any value as the default of conditional expressions. It need not be <em>#f</em>.</p>
 
@@ -229,7 +228,7 @@ scheme> (<span class="kw">if</span> (flist? '((1 2) 3)) 'yes 'no)
 
 <div class="prog"><pre><code>
 scheme> (<span class="kw">if</span> (non-portable-flist? '()) 'yes 'no)
-=> yes
+<span class="comment">;; yes</span>
 </pre></code></div>
 
     <p>Scheme programs should be explicit about the values of all logical expressions. This is demonstrated again in the following re-implementation of the <em>fsublist</em> procedure:</p>
@@ -242,22 +241,22 @@ scheme> (<span class="kw">define</span> (fsublist alist)
            (<span class="kw">else</span> (fsublist (cdr alist)))))
 
 scheme> (fsublist '(1 2 3 4 5))
-=> #f
+<span class="comment">;; #f</span>
 scheme> (fsublist '(1 2 (3 4) 5))
-=> (3 4)
+<span class="comment">;; (3 4)</span>
 scheme> (<span class="kw">let</span> ((s (fsublist '(1 2 3 4 5))))
           (<span class="kw">or</span> s 'no-sublists))
-=> no-sublists
+<span class="comment">;; no-sublists</span>
 scheme> (<span class="kw">let</span> ((s (fsublist '(1 2 (3 4) (5)))))
           (<span class="kw">or</span> s 'no-sublists))
-=> (3 4)
+<span class="comment">;; (3 4)</span>
 </pre></code></div>
 
 <h3>Clojure</h3>
 
     <p>Clojure treats both <em>nil</em> and <em>false</em> as logical false values. All other values, including the empty sequence, are treated as logical truths.
       Though <em>false</em> maps directly to Java's <em>Boolean/FALSE</em> static object, an object constructed by a call to <em>(Boolean. false)</em> is considered to be
-      logical true! So the key point to keep in mind is - all values other than the constants <em>nil</em> and <em>false</em> are <em>true</em>. Conditional expressions return <em>nil </em>as
+      logical true! So the important point to keep in mind is &ndash; all values other than the constants <em>nil</em> and <em>false</em> are <em>true</em>. Conditional expressions return <em>nil </em>as
       their default value. Clojure's <em>nil</em> is the same object as Java's<em> null</em> and the main reason for its existence is interoperability with the JVM<em>.</em></p>
 
     <p>Without further ado, let us re-implement the <em>flist?</em> function in Clojure. As Clojure has the more general concept of a sequence, which need not always be a list, we will call this function <em>fseq?</em>.</p>
@@ -278,11 +277,11 @@ clojure> (<span class="kw">defn</span> fseq? [aseq]
                 (safe-seq (first aseq))))
 
 clojure> (<span class="kw">if</span> (fseq? []) 'yes 'no)
-=> no
+<span class="comment">;; no</span>
 clojure> (<span class="kw">if</span> (fseq? [1 2 3]) 'yes 'no)
-=> no
+<span class="comment">;; no</span>
 clojure> (<span class="kw">if</span> (fseq? [[1 2] 3]) 'yes 'no)
-=> yes
+<span class="comment">;; yes</span>
 </pre></code></div>
 
     <p><em>Safe-seq</em> also comes-in handy for re-implementing <em>fsublist. </em>(I renamed this function as <em>fsubseq</em> in Clojure).</p>
@@ -295,13 +294,13 @@ clojure> (<span class="kw">defn</span> fsubseq [aseq]
                (fsubseq (rest aseq)))))
 
 clojure> (fsubseq [1 2 3 4 5])
-=> nil
+<span class="comment">;; nil</span>
 clojure> (fsubseq [1 2 [3 4] 5])
-=> [3 4]
+<span class="comment">;; [3 4]</span>
 clojure> (<span class="kw">or</span> (fsubseq [1 2 3 4 5]) 'no-subseqs)
-=> no-subseqs
+<span class="comment">;; no-subseqs</span>
 clojure> (<span class="kw">or</span> (fsubseq [1 2 [3 4] [5]]) 'no-subseqs)
-=> [3 4]
+<span class="comment">;; [3 4]</span>
 </pre></code></div>
 
 <h3>Conclusion</h3>
@@ -310,7 +309,7 @@ clojure> (<span class="kw">or</span> (fsubseq [1 2 [3 4] [5]]) 'no-subseqs)
       While Common Lisp favored efficiency and tradition, Scheme valued clarity and elegance. (If I were to design a  <a href="http://schemer.in/slogan/index.html" target="_blank">language</a>,
       I would choose a path between Scheme and Clojure.)</p>
 
-    <p>I hope, after reading this post, you must be in a better position to appreciate the following quote from Abelson and Sussman:
+    <p>I hope, after reading this post, you must be in a better position to appreciate the following quote from <a href="https://mitpress.mit.edu/sicp/" target="_blank">Abelson and Sussman</a>:
       <p>"It's remarkable how much energy in the standardization of Lisp dialects has been dissipated in arguments that are literally over nothing: Should <tt>nil</tt> be an ordinary name? Should the value of <tt>nil</tt> be a symbol? Should it be a list? Should it be a pair?"</p></p>
     
     <p>So let the arguments continue. The hapless novice can be left alone, still looking confused!</p>

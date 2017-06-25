@@ -29,7 +29,7 @@
       decode a TCP header. Writing such code can be difficult and error-prone. When we have to pack information in a space-efficient way,
       an abstraction that can perform I/O on streams of bits starts to look attractive!</p>
 
-    <p>In this blog post we develop such an abstraction for the JVM. In this process, we will learn how to mix high-performance Java code
+    <p>In this post we develop such an abstraction for the JVM. In this process, we will learn how to mix high-performance Java code
       with Clojure. We will also see how the expressiveness of Clojure can enhance the usability of lower-level abstractions.</p>
 
     <p>We will start with a simple and efficient library that allows us to read and write bits over an underlying stream.
@@ -233,7 +233,7 @@
 
     <p>To understand our goal better, let us think about a simple object that can be bit-encoded. The example I have chosen is that of
       <a href="https://en.wikipedia.org/wiki/High_color" target="_blank">16 bit colors</a>, where the red and blue components are encoded
-      using 5 bits and the green component is encoded in 6 bits. We can specify the structure of 16 bit colors as a vector of field names
+      in 5 bits and the green component is encoded in 6 bits. We can specify the structure of 16 bit colors as a vector of field names
       and their bit-lengths:</p>
 
     <div class="prog">
@@ -375,7 +375,7 @@
 
     <hr></hr>
     <p align="left">
-      <a href="mailto:vijay.the.lisper@gmail.com">Comments</a> | <a href="index.html">Home</a>
+      <a href="https://github.com/lispchronicles/lispchronicles.github.io/issues/4" target="_blank">Comments</a> | <a href="index.html">Home</a>
     </p>
     
   </body>

@@ -160,7 +160,7 @@ clojure> (pq-find-min pq)
     </div>
 
     <p><strong>Exercise 1</strong>. <code>Heap-merge</code> uses the <code>&lt;=</code> numeric comparison function for prioritizing the nodes.
-      Make this more generic by making the priority-operation configurable by the user.</p>
+      Make this function more generic by making the priority-operation configurable by the user.</p>
 
     <h2>The Priority Queue as a Seq</h2>
 
@@ -169,8 +169,8 @@ clojure> (pq-find-min pq)
       As a result, they are thread-safe and can share their state freely.</p>
 
     <p>The priority queue we implemented in the previous section is also immutable and persistent. So it would be a good candidate for being a
-      sequence. Let us make the priority queue respond to the <em>first</em>, <em>rest</em> and <em>conj</em>functions. These functions
-      in turn can be used to describe more sophisticated priority queue processing operations. This way our custom data structure is also given
+      sequence. Let us make the priority queue respond to the <em>first</em>, <em>rest</em> and <em>conj</em> functions. These functions
+      in turn can be used to describe more sophisticated sequence processing operations. This way our custom data structure is given
       a chance to blend nicely with the rest of Clojure.</p>
 
     <p>To be treated as a sequence, a type has to implement the
@@ -184,7 +184,7 @@ clojure> (pq-find-min pq)
       <a href="https://github.com/clojure/clojure/blob/master/src/jvm/clojure/lang/Seqable.java" target="_blank" rel="noopener">clojure.lang.Seqable</a>
       interface.</p>
 
-    <p>The final definition of <em>LeftistHeapPriorityQueue</em> follows:</p>
+    <p>All these requirements leads to the following final definition of <em>LeftistHeapPriorityQueue</em>:</p>
 
     <div class="prog">
       <pre><code>
@@ -260,7 +260,7 @@ clojure> (pq-find-min pq)
       <pre><code>    
 clojure> (<span class="kw">def</span> a (priority-queue [1 123 12 45]))
 clojure> (seq a)
-<span class="comment">;; #<lhpq<1 ...></span>
+<span class="comment">;; #lhpq&lt;1 ...&gt;</span>
 clojure> (seq? a)
 <span class="comment">;; true</span>
 clojure> (first a)
@@ -289,7 +289,7 @@ clojure> (first (rest (rest a)))
 
     <hr></hr>
     <p align="left">
-      <a href="mailto:vijay.the.lisper@gmail.com">Comments</a> | <a href="index.html">Home</a>
+      <a href="https://github.com/lispchronicles/lispchronicles.github.io/issues/5" target="_blank">Comments</a> | <a href="index.html">Home</a>
     </p>
 
   </body>
