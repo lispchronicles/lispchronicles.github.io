@@ -15,7 +15,7 @@
     <p>The <a href="./func.html">previous post</a> explained higher-order functions and the abstractions they enable us to build. The programming techniques we discussed there can be applied
       in any functional language. This post describes a kind of abstraction that can be built only in Lisp. I am referring to Lisp's ability to abstract over its own syntax.</p>
 
-    <p>If you have programmed in a language like C, Java or Python, you realize how "sacred" the idea of syntax is - those rigid, inviolable rules established by high-ranking language lawyers.
+    <p>If you have programmed in a language like C, Java or Python, you realize how "sacred" the idea of syntax is &ndash; those rigid, inviolable rules established by high-ranking language lawyers.
       But once in a while we do feel that if the language had such and such an operator or control construct, our life would've been easier. For instance, consider a Java programmer trying
       to iterate over a table in a relational database and  do something with the data in each row:</p>
 
@@ -54,8 +54,8 @@ String sql = <span class="str">"SELECT name, salary FROM employee WHERE salary >
     <h3>Expressions and the rules of evaluation</h3>
 
     <p>Before we delve into extending Lisp with new syntax, we should get a high-level overview of how Lisp programs are encoded and interpreted.
-      Lisp programs consist of expressions of two types - atomic and compound. An atomic expression (or atoms) consists of a value that cannot be split any further.
-      An integer literal like <em>23</em> is an example of an atom. The rules for evaluating an atom is listed below:</p>
+      Lisp programs consist of expressions of two types &ndash; atomic and compound. An atomic expression (or atoms) consists of a value that cannot be split any further.
+      An integer literal like <em>23</em> is an example of an atom. The rules for evaluating an atom are,</p>
 
     <p>
       <ol>
@@ -125,7 +125,7 @@ user> (quote x) <span class="comment">; same as 'x</span>
     <h3>Macros</h3>
     <p>Now we have enough background to understand the syntax-level extension facility offered by Lisp. Let us begin with a very simple but realistic syntactic extension. Imagine you want to define an operator
       that evaluates its body only when some condition is false. In Clojure you can use the built-in <em>if-not</em> or <em>when-not</em> operators for this, but you feel that the code will be more readable
-      if you can write something like - <em>(unless this-is-true do-this)</em>. It is possible to define <em>unless</em> as a higher-order function as shown by the following program:</p>
+      if you can write something like &ndash; <em>(unless this-is-true do-this)</em>. It is possible to define <em>unless</em> as a higher-order function as shown by the following program:</p>
 
 <div class="prog"><pre><code>
 (<span class="kw">defn</span> unless
@@ -191,15 +191,15 @@ user> `(~a ~a)
 </pre></code></div>
 
     <p>So in our example, the evaluator replaces <em>~condition</em> and <em>~consequent</em> with the lists <em>(&lt; 2 1)</em> and <em>(println "ok")</em> respectively. This results in the
-      final expression <em>(when-not (&lt; 2 1) (println "ok"))</em>. The compiler then proceed to replace the call to <em>unless</em> with this expression. This is as good as typing
+      final expression <em>(when-not (&lt; 2 1) (println "ok"))</em>. The compiler then proceeds to replace the call to <em>unless</em> with this expression. This is as good as typing
       the <em>when-not</em> expression directly into the program. This phase of compilation when the macro is "called" to return some auto-generated code is known as "macro expansion".
-      Macro expansion happens only once in the life-time of a macro call. The expanded code can be executed multiple times when the program runs, without any additional overhead.</p>
+      Macro expansion happens only once in the life-time of a macro call. The expanded code may be executed multiple times when the program runs, without any additional overhead.</p>
 
     <p><strong>Exercise 1</strong>: In Clojure, the built-in function <em>macroexpand</em> can be called to find out the expansion of a macro. Use this function to return the expansion of the call
       <em>(unless (&lt; 2 1) (println "ok"))</em>. Find out why the resulting expansion is different from the template code we provided in the body of <em>unless</em>.
       Also figure out the use of <em>macroexpand-1</em> and <em>macroexpand-all</em>. These functions will come in handy for debugging complex macros.</p>
 
-    <p>Our current implementation of <em>unless</em> has a limitation - it can accept only a single expression in the <em>consequent</em> part. Let us fix this by taking
+    <p>Our current implementation of <em>unless</em> has a limitation &ndash; it can accept only a single expression in the <em>consequent</em> part. Let us fix this by taking
       advantage of a macro's ability to accept an arbitrary number of arguments. These arguments are all packaged into a list and passed to the macro. This list has to be
       introduced as a parameter by preceding it with an ampersand (&). Before changing <em>unless</em>, let us look at a simpler example. The following program defines a macro
       that can merge an arbitrary number of values into a single vector.</p>
@@ -235,9 +235,9 @@ user> `(~a ~a)
 
 <span class="comment">;; Example usage:</span>
 (unless (< 2 1)
-(println "hey")
-(println "there!")
-(+ 2 1))
+  (println "hey")
+  (println "there!")
+  (+ 2 1))
 <span class="comment">;;&gt; hey
 ;;&gt; there!
 ;; 3</span>
@@ -269,7 +269,7 @@ user> `(~a ~a)
     <p>Functions are the natural building blocks of Lisp, their implementation is highly optimized and they have first-class status in the language.
       Too many macro calls tend to bloat the final program generated by the compiler by having the same code copied to multiple locations. If a syntactic extension to the language makes it cleaner,
       faster and easier to maintain, go for macros. If you have to define a custom language to solve a particular problem, you may have to depend a lot on macros.
-      In all other situations, stick to functions. So the guiding principal is - use functions whenever you can and use macros when you have to.</p>
+      In all other situations, stick to functions. So the guiding principal is &ndash; use functions whenever you can and use macros when you have to.</p>
     
 <h3>Macro caveats</h3>
     <p>Macros are vulnerable to certain types of bugs that do not usually occur with normal functions. This section throws light on some of those issues.</p>
@@ -313,8 +313,8 @@ user> `(~a ~a)
 <div class="prog"><pre><code>
 (for-loop x 0 3 (println x))
 <span class="comment">;;&gt; 0
-     1
-     2</span>
+    1
+    2</span>
 </pre></code></div>
 
     <p>But when we use the symbol <em>end</em> for the loop variable, a subtle bug raises its ugly head to the surface:</p>
@@ -351,12 +351,12 @@ user> `(~a ~a)
 
 (for-loop x 0 3 (println x))
 <span class="comment">;;&gt; 0
-     1
-     2</span>
+    1
+    2</span>
 (for-loop end 0 3 (println end))
 <span class="comment">;;&gt; 0
-     1
-     2</span>
+    1
+    2</span>
 </pre></code></div>
 
     <p>Note that the first <em>let</em> expression is not part of the code template returned by the macro. It is not quasiquoted. So it will be evaluated during compile-time,
@@ -432,7 +432,7 @@ expensive computation....</span>
 </pre></code></div>
 
     <p>If there is no other reason, you should unquote and evaluate the arguments only once, bind the results to local variables and refer to those variables in the rest of the macro body.
-      This was what the earlier definition of <em>for-loop</em> was doing and it did suffer from this "multiple-evaluation" problem.</p>
+      This was what the earlier definition of <em>for-loop</em> was doing and it did not suffer from this "multiple-evaluation" problem.</p>
 
     <p>The order in which macro arguments are evaluated can also become an issue, especially if the argument expressions perform side-effects. You can avoid this problem by sticking to pure
       functional programming as much as possible. The macro expansions should also be purely functional. Expander code should depend on nothing but the expressions passed to it as arguments
@@ -441,7 +441,7 @@ expensive computation....</span>
     <h3>Conclusion</h3>
     <p>It is the unique nature by which Lisp programs are encoded and interpreted that makes it an extensible language. This amazing extensibility has enabled Lisp to be a great survivor.
       When new programming paradigms emerged, older languages died out. But Lisp simply adapted to the changing environment and moved on. It is this adaptability and flexibility that makes
-      learning Lisp not only fun but also a safe investment!</p>
+      learning Lisp not only fun but also a safe investment.</p>
 
     <p><strong>Exercise 2</strong>: At the beginning of this post we talked about an extension to the Java language for making relational database access easier. Design and implement a similar extension as a Clojure macro.</p>
     
@@ -459,7 +459,7 @@ expensive computation....</span>
 
     <hr></hr>
     <p align="left">
-      <a href="mailto:vijay.the.lisper@gmail.com">Comments</a> | <a href="index.html">Home</a>
+      <a href="https://github.com/lispchronicles/lispchronicles.github.io/issues/2" target="_blank">Comments</a> | <a href="index.html">Home</a>
     </p>
     
   </body>
