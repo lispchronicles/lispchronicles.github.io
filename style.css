@@ -84,9 +84,15 @@ p {
     width: 70%;
 }
 
-p.firstslogan {
+p.maintitle {
     padding-top: 30px;
     padding-bottom: 30px;
+    padding-left: 0px;
+}
+
+p.blogtitle {
+    padding-top: 30px;
+    padding-bottom: 0px;
     padding-left: 0px;
 }
 
@@ -212,6 +218,11 @@ td.name {
 
 .big {
     font-size: 350%;
+    font-weight: bold;
+}
+
+.blogheader {
+    font-size: 200%;
     font-weight: bold;
 }
 
