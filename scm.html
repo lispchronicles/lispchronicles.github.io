@@ -49,5 +49,83 @@
       </code></pre>
     </div>
 
+    <p>As functions are first-class, <code>sum-list</code> can be defined as a general function that "reduces" lists to a single value
+      using a user-specified operation. This operation can be passed as an argument to the function.</p>
+
+    <div class="prog">
+      <pre><code>
+(<span class="kw">define</span> (reduce xs init opr)
+  (<span class="kw">if</span> (null? xs)
+  init
+  (reduce (cdr xs) (opr (car xs) init) opr)))
+
+<span class="comment">;; Same as sum-list</span>
+(reduce '(1 2 3 4 5) 0 +)
+<span class="comment">;;=> 15</span>
+
+(reduce '(1 2 3 4 5) 1 *)
+<span class="comment">;;=> 120</span>
+
+(<span class="kw">define</span> (square x) (* x x))
+
+(reduce '(1 2 3 4 5) 1 (<span class="kw">lambda</span> (x y) (+ (square x) (square y))))
+<span class="comment">;;=> 28569050</span>
+      </code></pre>
+    </div>
+
+    <h2>Lexical Scope</h2>
+
+    <p>Scheme is one of the earliest languages to support lexial scoping of variables. This means, all variable bind to the values given
+      to them in the context they were defined. These bindings do not change even if the defining context is invoked from other parts
+      of the program. The following program demonstrates the immense possiblities that comes with lexical scoping. It defines a function
+      that returns another function. The returned function can refer to the variable bindings in its defining context, even if though it may
+      be called from other parts of the program.</p>
+
+    <div class="prog">
+      <pre><code>
+(<span class="kw">define</span> (make-adder base)
+  (<span class="kw">lambda</span> (x) (+ base x)))
+
+(<span class="kw">define</span> a5 (make-adder 5))
+(<span class="kw">define</span> a10 (make-adder 10))
+(a5 20)
+<span class="comment">;;=> 25</span>
+(a10 20)
+<span class="comment">;;=> 30</span>
+      </code></pre>
+    </div>
+
+    <p>The combination of first-class functions and lexical scoping allows Scheme to express object-based programs. No special syntax or
+      language constructs is required to program in this powerful paradigm.</p>
+
+    <div class="prog">
+      <pre><code>
+(<span class="kw">define</span> (make-cat)
+  (<span class="kw">lambda</span> (message)
+    (<span class="kw">case</span> message
+      ((say-hello) 'meow))))
+
+(<span class="kw">define</span> (make-dog)
+  (<span class="kw">lambda</span> (message)
+    (<span class="kw">case</span> message
+      ((say-hello) 'bow))))
+
+(<span class="kw">define</span> c (make-cat))
+(c 'say-hello)
+<span class="comment">;;=> meow</span>
+(<span class="kw">define</span> d (make-dog))
+(d 'say-hello)
+<span class="comment">;;=> bow</span>
+      </code></pre>
+    </div>
+
+    <h2>Syntactic Abstractions</h2>
+
+    TODO
+
+    <h2>Control-flow Abstractions</h2>
+
+    TODO
+
   </body>
 </html>
