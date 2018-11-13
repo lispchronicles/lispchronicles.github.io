@@ -22,9 +22,32 @@
 
     <p><a href="https://en.wikipedia.org/wiki/Scheme_%28programming_language%29">Scheme</a> is a masterpiece of minimalism in
       programming language design. Being a simple language, it never ceases to amaze me with its expressive power. Its most widely
-      implemented <a href="https://schemers.org/Documents/Standards/R5RS/r5rs.pdf">standard</a> is only 50 pages long and can be read
-      over a weekend. How does such a compactly defined language stack up against large, "industry standard" languages? What is the secret
-      sauce of Scheme's minimal but effective design? These are the questions we will try to answer in this post. The insights gained
-      may be applicable to genreal system design problems.</p>
+      implemented <a href="https://schemers.org/Documents/Standards/R5RS/r5rs.pdf" target="_blank">standard</a> is only 50 pages
+      long and can be read over a weekend. How does such a compactly defined language stack up against large, "industry" languages?
+      What is the secret sauce of Scheme's minimal but effective design? These are the questions we will try to answer in this post.
+      The insights gained should be applicable to general system design problems.</p>
+
+    <h2>The Power of Lambda!</h2>
+
+    <p>First-class functions are the primary means of abstraction in Scheme. This means functions can be passed as arguments to other functions,
+      can be created at will and can be stored in data structures. Scheme functions can potentially make unbounded number of iterative calls
+      because Scheme implementations are required to optimize <a href="https://en.wikipedia.org/wiki/Tail_call" target="_blank">tail calls</a>.
+      This enables the programmer to use tail recursion for expressing iteration and eschews the need for building specialized looping
+      constructs (<code>for</code>, <code>while</code> etc) into the core of the language.</p>
+
+    <div class="prog">
+      <pre><code>
+<span class="comment">;; Sum the elements in a list, utilizing tail recursion.</span>
+
+(<span class="kw">define</span> (sum-list xs sum)
+  (<span class="kw">if</span> (null? xs)
+    sum
+    (sum-list (cdr xs) (+ (car xs) sum))))
+
+(sum-list '(1 2 3 4 5) 0)
+<span class="comment">;;=> 15</span>
+      </code></pre>
+    </div>
+
   </body>
 </html>
