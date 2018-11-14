@@ -103,25 +103,69 @@
 (<span class="kw">define</span> (make-cat)
   (<span class="kw">lambda</span> (message)
     (<span class="kw">case</span> message
-      ((say-hello) 'meow))))
+      ((say-hello) <span class="sym">'meow</span>))))
 
 (<span class="kw">define</span> (make-dog)
   (<span class="kw">lambda</span> (message)
     (<span class="kw">case</span> message
-      ((say-hello) 'bow))))
+      ((say-hello) <span class="sym">'bow-wow</span>))))
 
 (<span class="kw">define</span> c (make-cat))
-(c 'say-hello)
+(c <span class="sym">'say-hello</span>)
 <span class="comment">;;=> meow</span>
 (<span class="kw">define</span> d (make-dog))
-(d 'say-hello)
-<span class="comment">;;=> bow</span>
+(d <span class="sym">'say-hello</span>)
+<span class="comment">;;=> bow-wow</span>
       </code></pre>
     </div>
 
     <h2>Syntactic Abstractions</h2>
 
-    TODO
+    <p>It is quite impressive that a combination of a few simple concepts is enough to program in multiple paradigms. But sometimes the
+      programs written might need a more natural syntax. For instance, programs will become shorter and easier to maintain if there is
+      syntactic support for defining classes of objects. Instead of building in syntax for all possible paradigms, Scheme (like all Lisps)
+      allow users to extend the language syntax by a macro system. Scheme's macro system is even more powerful because it is guranteed to be
+      <a href="https://en.wikipedia.org/wiki/Hygienic_macro" target="_blank">hygienic</a>. The Scheme macro system respects the lexical
+      scoping of the rest of the language. This is assured by special naming and scoping rules for macro expansion and avoids
+      common programming errors that can occur in the macro systems of other programming languages. The macro system is also very expressive
+      because it allows the programmer to add new syntactic constructs to the language using a simple pattern matching sublanguage.</p>
+
+    <p>Let us extend Scheme to support a language for defining new classes of objects. This extension will add a new construct to
+      the language will called <code>define-class</code>. It takes the class name and a list of messages and message implementations as
+      arguments. The Scheme macro expander will transform a <code>define-class</code> to a function definition that takes a symbolic
+      message as argument and execute the appropriate message implementation.</p>
+
+    <div class="prog">
+      <pre><code>
+(<span class="kw">define-syntax</span> define-class
+  (<span class="kw">syntax-rules</span> ()
+    ((define-class class-name ((message-name message-body) ...))
+     (<span class="kw">define</span> (class-name)
+       (<span class="kw">lambda</span> (message)
+	 (<span class="kw">case</span> message
+	   ((message-name) message-body)
+	   ...
+	   (<span class="kw">else</span> (error <span class="str">"invalid message"</span> message))))))))
+
+(<span class="kw">define-class</span> cat ((say-hello <span class="sym">'meow</span>)))
+(<span class="kw">define-class</span> dog ((say-hello <span class="sym">'bow-wow</span>)))
+
+(<span class="kw">define</span> c (cat))
+(<span class="kw">define</span> d (dog))
+
+(c <span class="sym">'say-hello</span>)
+<span class="comment">;;=> meow</span>
+(d <span class="sym">'say-hello</span>)
+<span class="comment">;;=> bow-wow</span>
+      </code></pre>
+    </div>
+
+    <p><b>Exercise 1:</b> Add attribute support for classes defined by <code>define-class</code>. For instance, it should be possible to
+      assign names to the various animal objects, like - <code>(define c (cat 'sassy))</code>. It should be possible to refer and
+      update the attributes from messages, e,g: </p>
+    <p><pre><code>(c 'name) ;;=> sassy
+(c 'set-name 'Sassy)
+(c 'name) ;;=> Sassy</code></pre></p>
 
     <h2>Control-flow Abstractions</h2>
 
