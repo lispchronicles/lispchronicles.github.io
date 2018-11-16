@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="./style.css" type="text/css" />
-    <title>Lisp Chronicles/Etudes in Minimalism</title>
+    <title>Lisp Chronicles/An Etude in Minimalism</title>
 
     <link rel="icon" href="img/lc32.jpg" sizes="32x32" />
     <link rel="icon" href="img/lc192.jpg" sizes="192x192" />
@@ -13,27 +13,26 @@
 
   <body>
 
-    <p class="blogtitle"><span class="blogheader">Etudes in Minimalism</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <p class="blogtitle"><span class="blogheader">An Etude in Minimalism</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <a href="index.html">Home</a>&nbsp;&nbsp;&nbsp;
       <a href="https://twitter.com/lispchronicles" target="_blank">Twitter</a>&nbsp;&nbsp;&nbsp;
       <a href="http://schemer.in" target="_blank">schemer.in</a>&nbsp;&nbsp;&nbsp;
     </p>
     <p class="published">2018-November-11</p>
 
-    <p><a href="https://en.wikipedia.org/wiki/Scheme_%28programming_language%29">Scheme</a> is a masterpiece of minimalism in
-      programming language design. Being a simple language, it never ceases to amaze me with its expressive power. Its most widely
+    <p><a href="https://en.wikipedia.org/wiki/Scheme_%28programming_language%29" target="_blank">Scheme</a> is a masterpiece of minimalism in
+      programming language design. Despite being a simple language, it has amazing expressive power. Its most widely
       implemented <a href="https://schemers.org/Documents/Standards/R5RS/r5rs.pdf" target="_blank">standard</a> is only 50 pages
-      long and can be read over a weekend. How does such a compactly defined language stack up against large, "industry" languages?
-      What is the secret sauce of Scheme's minimal but effective design? These are the questions we will try to answer in this post.
-      The insights gained should be applicable to general system design problems.</p>
+      long and can be read over a weekend. This post is an attempt to find out the secret to Scheme's minimal but effective design.
+      It is hoped that the insights gained should be applicable to system design problems in general.</p>
 
     <h2>Lambda the Powerful!</h2>
 
-    <p>First-class functions are the primary means of abstraction in Scheme. This means functions can be passed as arguments to other functions,
-      can be created at will and can be stored in data structures. Scheme functions can potentially make unbounded number of iterative calls
-      because Scheme implementations are required to optimize <a href="https://en.wikipedia.org/wiki/Tail_call" target="_blank">tail calls</a>.
-      This enables the programmer to use tail recursion for expressing iteration and eschews the need for building specialized looping
-      constructs (<code>for</code>, <code>while</code> etc) into the core of the language.</p>
+    <p>First-class functions are the primary means of abstraction in Scheme. A function can be passed as an argument to other functions,
+      can be created at will and can be stored in data structures. A function can also make
+      unbounded number of iterative calls to itself or to other functions. This is possible because Scheme implementations are required
+      to optimize <a href="https://en.wikipedia.org/wiki/Tail_call" target="_blank">tail calls</a>.
+      This enable programmers to use tail recursion for expressing iteration.</p>
 
     <div class="prog">
       <pre><code>
@@ -49,8 +48,8 @@
       </code></pre>
     </div>
 
-    <p>As functions are first-class, <code>sum-list</code> can be defined as a general function that "reduces" lists to a single value
-      using a user-specified operation. This operation can be passed as an argument to the function.</p>
+    <p>We can redefine <code>sum-list</code> as a general "list reducer". The operation used to combine the elements of the list together
+      into a single value can be passed as a functional argument:</p>
 
     <div class="prog">
       <pre><code>
@@ -73,13 +72,17 @@
       </code></pre>
     </div>
 
+    <p>Tail call optimization makes it unnecessary to bake-in looping constructs like <code>for</code> and <code>while</code> into the core
+      of the language.</p>
+
     <h2>Lexical Scope</h2>
 
-    <p>Scheme is one of the earliest languages to support lexical scoping of variables. This means, all variable bind to the values given
-      to them in the context they were defined. These bindings do not change even if the defining context is invoked from other parts
-      of the program. The following program demonstrates the immense possibilities that comes with lexical scoping. It defines a function
-      that returns another function. The returned function can refer to the variable bindings in its defining context, even if though it may
-      be called from other parts of the program.</p>
+    <p>Scheme was one of the earliest languages to support lexical scoping of variables. This means, all variable bind to the values given
+      to them in the context they were defined. These bindings do not change even when the expressions are evaluated in other parts of the
+      program.</p>
+    <p>The following program demonstrates the possibilities offered by lexical scoping. It defines a function
+      that returns another function. The returned function can refer to the variable bindings in its defining context, even when
+      it is invoked from other contexts.</p>
 
     <div class="prog">
       <pre><code>
@@ -96,7 +99,7 @@
     </div>
 
     <p>The combination of first-class functions and lexical scoping allows Scheme to express object-based programs. No special syntax or
-      language constructs is required to program in this powerful paradigm.</p>
+      language construct is required to use this powerful paradigm.</p>
 
     <div class="prog">
       <pre><code>
@@ -125,15 +128,16 @@
 
     <p>It is quite impressive that a combination of a few simple concepts is enough to program in multiple paradigms. But sometimes the
       programs written might need a more natural syntax. For instance, programs will become shorter and easier to maintain if there is
-      syntactic support for defining classes of objects. Instead of building in syntax for all possible paradigms, Scheme (like all Lisps)
-      allow users to extend the language syntax by a macro system. Scheme's macro system is even more powerful because it is guaranteed to be
+      syntactic support for defining classes of objects. Instead of building in syntax for all possible paradigms, Scheme (like other Lisps)
+      allow users to extend the language syntax by a macro system. Scheme's macro system is even more powerful because
+      the code generated by a macro is guaranteed to be
       <a href="https://en.wikipedia.org/wiki/Hygienic_macro" target="_blank">hygienic</a>. The Scheme macro system respects the lexical
       scoping of the rest of the language. This is assured by special naming and scoping rules for macro expansion and avoids
       common programming errors that can occur in the macro systems of other programming languages. The macro system is also very expressive
-      because it allows the programmer to add new syntactic constructs to the language using a simple pattern matching sub-language.</p>
+      because it makes use of a simple pattern matching sub-language.</p>
 
     <p>Let us extend Scheme to support a language for defining new classes of objects. This extension will add a new construct to
-      the language will called <code>define-class</code>. It takes the class name and a list of messages and message implementations as
+      the language called <code>define-class</code>. It takes the class name and a list of messages and message handlers as
       arguments. The Scheme macro expander will transform a <code>define-class</code> to a function definition that takes a symbolic
       message as argument and execute the appropriate message implementation.</p>
 
@@ -163,11 +167,40 @@
     </div>
 
     <p><strong>Exercise 1</strong>: Add attribute support for classes defined by <code>define-class</code>. For instance, it should be possible to
-      assign names to the various animal objects, like - <code>(define c (cat 'sassy))</code>. It should be possible to refer and
-      update the attributes from messages, e,g: </p>
+      assign names to the various animal objects, like - <code>(define c (cat 'sassy))</code>. It should also be possible to refer and
+      update the attributes through messages, e,g: </p>
     <p><pre><code>(c 'name) ;;=> sassy
-(c 'set-name 'Sassy)
-(c 'name) ;;=> Sassy</code></pre></p>
+(c 'set-name 'Kitty)
+(c 'name) ;;=> Kitty</code></pre></p>
+
+    <p>Let us conclude this section with one more example. We will define a macro that will behave like the
+      <code>while</code> loop found in most imperative languages. Notice how the macro compiles the loop to a tail-recursive function.</p>
+
+    <div class="prog">
+      <pre><code>
+(<span class="kw">define-syntax</span> while
+  (<span class="kw">syntax-rules</span> ()
+    ((while condition body ...)
+     (<span class="kw">begin</span>
+       (<span class="kw">define</span> (loop)
+	 (<span class="kw">if</span> condition
+	     (<span class="kw">begin</span>
+                body ...
+	       (loop))))
+        (loop)))))
+
+<span class="comment">;; Usage:</span>
+(<span class="kw">define</span> i 0)
+(while (&lt; i 5)
+  (display <span class="str">"hello\n"</span>)
+  (set! i (+ i 1)))
+<span class="comment">;;-> hello
+     hello
+     hello
+     hello
+     hello</span>
+      </code></pre>
+    </div>
 
     (<a href="./syn.html" target="_blank">Read more</a> about building syntactic abstractions in Lisp).
 
@@ -175,13 +208,14 @@
 
     <p>The previous sections showed how a pragmatic language can be designed on top of only a couple of simple building blocks.
       First-class functions and macros can be combined together in intuitive ways to extend and adapt the language to suit
-      almost any problem domain. But Scheme does not stop with these. It also allows the programmer to get access to the control state of
-      the program and add extensions to the language that control the way the program's execution flows. Scheme allows the capture of
-      the current state of the control flow as a function. If this function is called from another part of the program, control will go back
-      to the place where it was captured and the program will continue executing from there.</p>
+      almost any problem domain. But Scheme does not stop there! It also allows the programmer to get access to the control state of
+      the program and add extensions to the language that control the way the program execution flows. It is possible to capture
+      the current state of control flow as a function. If this function is called from another part of the program, control will go back
+      to the point where it was captured and the program will continue executing from there.</p>
 
-    <p>The presence of first-class continuations means Scheme do not need built-in support for features like exceptions and coroutines.
-      These can be implemented added to the language as libraries.</p>
+    <p>The presence of first-class <a href="https://en.wikipedia.org/wiki/Continuation" target="_blank">continuations</a>
+      means Scheme do not need built-in support for features like exceptions and coroutines.
+      These can be added to the language as libraries.</p>
 
     <p>We will conclude this post with two examples of using continuations. The first one shows the implementation of a simple coroutine
       mechanism.</p>
@@ -212,7 +246,14 @@
     <p>The continuation captured in the function <code>f</code> allows the function <code>g</code> to restart <code>f</code> from where it
       left off. This code can become the basis for a more feature-full multitasking library.</p>
 
-    <p>The second example combines continuations with functions and macros to implements an exception handling mechanism.
+    <p><strong>Exercise 2</strong>: Read about the <a href="https://en.wikipedia.org/wiki/Actor_model" target="_blank">Actor model</a>
+      of computation and write an implementation for Scheme.
+      Look at <a href="https://en.wikipedia.org/wiki/Erlang_(programming_language)" target="_blank">Erlang</a> for inspiration!
+      You can find some guidance on actual implementation
+      <a href="https://www.scheme.com/tspl4/examples.html#./examples:h11" target="_blank">here</a> and
+      <a href="http://www.iro.umontreal.ca/~gambit/doc/gambit.html#Threads" target="_blank">here</a>.</p>
+
+    <p>The second example combines continuations with functions and macros to implement an exception handling mechanism.
       Basically, the error handlers are continuations which are made to replace the current state of program execution when an
       exception is raised.</p>
 
@@ -269,7 +310,7 @@
 (with-handler
    (<span class="kw">lambda</span> (ex)
      (format <span class="pw">#t</span> <span class="str">"~A\n"</span> ex))
-   (display (f 10 20))
+   (display (f 10 0))
    (display <span class="str">" -- done!\n"</span>))
 <span class="comment">;;-> (error . cannot divide by zero)</span>
 </code></pre>
@@ -277,12 +318,14 @@
 
 
     <h2>Conclusion</h2>
-    <p>Scheme is truly the Lego of the programming world. Strict, first-class functions with lexically scoped variable bindings
-      are the primary building material here. You combine and compose them in various patterns to build abstractions of immense power.
-      You build them fast because the semantics of function definition and application is simple to understand and easy to reason about.
-      You get abstractions with <a href="https://ecraven.github.io/r7rs-benchmarks/" target="_blank">good performance</a>
-      because good Scheme implementations take special care to optimize function calls. Add hygienic macros and continuations to the toolbox
-      and you have unlimited power at your disposal. You can build the right abstractions at the right level and write code in
-      a language tailor-made to suit the problem at hand. Indeed Scheme is a triumph of minimalism in language design and engineering!</p>
+    <p>Scheme is the <a href="https://en.wikipedia.org/wiki/Lego" target="_blank">Lego</a> of the programming world.
+      Strict, first-class functions with lexically scoped variable bindings
+      are the primary building material here. We combine and compose them in various patterns to build abstractions of immense power.
+      These abstractions can be constructed fast because the semantics of function definition and application is
+      simple to understand and easy to reason about.
+      These abstractions will normally have <a href="https://ecraven.github.io/r7rs-benchmarks/" target="_blank">good performance</a>
+      because most Scheme implementations take special care to optimize function calls. Add hygienic macros and continuations to the toolbox
+      and we have unlimited power at our disposal. Scheme allows us to build the right abstractions at the right level and write code in
+      a language tailor-made for the problem at hand. Indeed Scheme is a triumph of minimalism in language design and engineering!</p>
   </body>
 </html>
