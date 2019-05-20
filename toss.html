@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="./style.css" type="text/css" />
-    <title>Lisp Chronicles/Coin Tossing Functions</title>
+    <title>Lisp Chronicles/Toss them, Coins!</title>
 
     <link rel="icon" href="img/lc32.jpg" sizes="32x32" />
     <link rel="icon" href="img/lc192.jpg" sizes="192x192" />
@@ -13,21 +13,21 @@
 
   <body>
 
-    <p class="blogtitle"><span class="blogheader">Coin Tossing Functions</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <p class="blogtitle"><span class="blogheader">Toss them, Coins!</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <a href="index.html">Home</a>&nbsp;&nbsp;&nbsp;
       <a href="https://twitter.com/lispchronicles" target="_blank">Twitter</a>&nbsp;&nbsp;&nbsp;
       <a href="http://schemer.in" target="_blank">schemer.in</a>&nbsp;&nbsp;&nbsp;
     </p>
     <p class="published">2019-May-20</p>
 
-    <p>Random generation of events is fundamental for modeling many statistical processes. In this post we will discuss
+    <p>Random generation of events is important for modeling many statistical processes. In this post we will discuss
       how to simulate the tossing of an unbiased coin in Clojure. We will do this using pure functional techniques.
       We will also write functions to derive some interesting statistics from the coin-toss experiments.
 
     <h2>Simulating Coin Tosses</h2>
 
-    <p>A coin toss can result in either a head or a tail. If we assign the integer `1` to head and `0` to tail, we can
-      use the `rand-int` function to simulate a single toss.</p>
+    <p>A coin toss can result in either a head or a tail. We will assign the integer <code>1</code> to head and <code>0</code> to tail,
+      so that we can use the <code>rand-int</code> function to simulate a single toss.</p>
 
     <div class="prog">
       <pre><code>
@@ -37,8 +37,9 @@
       </code></pre>
     </div>
 
-    <p>How can we simulate `N` coin tosses? With a lazy sequence, we can represent as many coin tosses as we want, the following
-      function achieves this:</p>
+    <p>How can we simulate <code>N</code> tosses? With the help
+      of <a href="http://clojure-doc.org/articles/language/laziness.html" target="_blank">lazy sequences</a>.
+      The following function will give us as many tosses as we want!</p>
 
     <div class="prog">
       <pre><code>
@@ -50,10 +51,10 @@
       </code></pre>
     </div>
 
-    <h2>A Functional Inquiry</h2>
+    <h2>Functional Inquiry</h2>
 
-    <p>Now we would like to answer some questions about the data gathered from <code>N</code> tosses, like, how many heads were generated
-      by the experiment?. The higher-order function <code>reduce</code> can help us here:</p>
+    <p>Now we would want to answer some questions about the data gathered from <code>N</code> tosses, like how many heads were generated
+      by the experiment? The higher-order function <code>reduce</code> can help us here:</p>
 
     <div class="prog">
       <pre><code>
@@ -62,39 +63,40 @@
       </code></pre>
     </div>
 
-    <p>Note that you may get a different result, as the simulation includes random values.</p>
+    <p><b>Note</b> You may get a different result, as the simulation includes random values.</p>
 
     <p>It is well-known that the ratio of the number of heads (or tails) to the total number of tosses approaches <code>0.5</code> as
-      the number of tosses increases. To test this out, we first need a version of `reduce` that returns a sequence of cumulative
+      the number of tosses increases. To test this out, we first need a version of <code>reduce</code> that returns a sequence of cumulative
       results. Let's define this function:</p>
 
     <div class="prog">
       <pre><code>
-(<span class="kw">defn</span> cum-reduce [f init xs]
+(<span class="kw">defn</span> cumulate [f init xs]
   (<span class="kw">when</span> (seq xs)
     (<span class="kw">let</span> [r (f init (first xs))]
-      (<span class="kw">lazy-seq</span> (cons r (cum-reduce f r (rest xs)))))))	  
+      (<span class="kw">lazy-seq</span> (cons r (cumulate f r (rest xs)))))))
       </code></pre>
     </div>
 
-    <p>Let's call <code>reduce</code> and <code>cum-reduce</code> on the same inputs and see the difference in output:</p>
+    <p>Let's call <code>reduce</code> and <code>cumulate</code> on the same inputs and see the difference in their outputs:</p>
 
     <div class="prog">
       <pre><code>
 > (reduce + 0 [1 2 3 4 5])
 <span class="comment">;;=> 15</span>
-> (cum-reduce + 0 [1 2 3 4 5])
+> (cumulate + 0 [1 2 3 4 5])
 <span class="comment">;;=> (1 3 6 10 15)</span>
       </code></pre>
     </div>
 
-    <p>As we can see, <code>cum-reduce</code> also returns the result of reduction at each step. We can use this function to report
-      the cumulative sum of heads at each toss. We can do this by calling <code>cum-reduce</code> on the result of <code>tosses</code>:</p>
+    <p>As we see, <code>cumulate</code> also returns the result of reduction at each step. We can use this function to report
+      the cumulative sum of heads at each toss. We can achieve this by calling <code>cumulate</code> on the result of <code>tosses</code>:</p>
 
     <div class="prog">
       <pre><code>
 > (<span class="kw">def</span> xs (take 3000 (tosses)))
-> (<span class="kw">def</span> ss (cum-reduce + 0 xs))
+> (<span class="kw">def</span> ch (partial cumulate + 0))
+> (<span class="kw">def</span> ss (ch xs))
 > (<span class="kw">def</span> rs (map #(/ (float %1) %2) ss (range 1 3001)))
 > (drop 2500 rs)
 <span class="comment">;;=> (0.5041983206717313 0.504396482813749 0.5041949660407511 ...)
@@ -103,12 +105,45 @@
 
     <p>The ratio of heads indeed approach <code>0.5</code> with a sufficiently large number of coin-toss events.</p>
 
-    <p>There are other interesting information that we can derive by writing simple functions on the data returned by <code>tosses</code>.
-      For instance, can you design a function to report the excess of heads over tails or vice versa over a number of tosses? Try to achieve
-      this using only the techniques of higher-order functional programming. You may also use a library like
-      <a href="http://incanter.org/" target="_blank">Incanter</a> to visualize the information you collect.</p>
+    <p>There are other interesting information that we can derive from the data returned by <code>tosses</code>.
+      For instance, can you design a function to report the excess of heads over tails for a particular toss?</p>
 
-    <p><b>PS</b> The inspiration for this post came from <a href="https://webdocs.cs.ualberta.ca/~smillie/Jpage/lecture.pdf">this</a> lecture
+    <p>The problem can be solved by finding the difference between the cumulative number of heads and the cumulative number of tails
+      for the specified toss. We can find the cumulative of tails by first "inverting" the tosses and then applying <code>cumulate</code> to
+      the result:</p>
+
+    <div class="prog">
+      <pre><code>
+> (<span class="kw">def</span> xs (take 10 (tosses)))
+> xs
+<span class="comment">;;=> (0 0 0 1 1 1 0 0 1 0)</span>
+
+> (<span class="kw">defn</span> inv [xs]
+    (map #(if (zero? %) 1 0) xs))
+
+> (<span class="kw">def</span> ys (inv xs))
+> ys
+<span class="comment">;;=> (1 1 1 0 0 0 1 1 0 1)</span>
+
+> (<span class="kw">defn</span> excess [xs n]
+    (<span class="kw">let</span> [hs (ch xs)
+	  ts (ch (inv xs))]
+      (nth (map #(- %1 %2) hs ts) n)))
+
+> (excess xs 4)
+<span class="comment">;;=> -1</span>
+> (excess xs 5)
+<span class="comment">;;=> 0</span>
+> (excess xs 6)
+<span class="comment">;;=> -1</span>
+      </code></pre>
+    </div>
+
+    <p><b>Exercise 1</b> Write a function to report the first <code>n</code> excesses of heads over tails.</p>
+    <p><b>Exercise 2</b> Use <a href="http://incanter.org/" target="_blank">Incanter</a> to visualize the various
+      information you gather about coin tosses. To start, you may plot the ratios obtained from the first 3000 tosses.</p>
+
+    <p><b>Note</b> The inspiration for this post came from <a href="https://webdocs.cs.ualberta.ca/~smillie/Jpage/lecture.pdf">this</a> lecture
       by Prof. Keith Smillie.</p>
     
   </body>
