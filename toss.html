@@ -22,11 +22,11 @@
 
     <p>Random generation of events is important for modeling many statistical processes. In this post we will discuss
       how to simulate the tossing of an unbiased coin in Clojure. We will do this using pure functional techniques.
-      We will also write functions to derive some interesting statistics from the coin-toss experiments.
+      We will also write functions to derive some interesting statistics from coin-toss experiments.
 
     <h2>Simulating Coin Tosses</h2>
 
-    <p>A coin toss can result in either a head or a tail. We will assign the integer <code>1</code> to head and <code>0</code> to tail,
+    <p>A coin toss can result in either a head or a tail. We shall assign the integer <code>1</code> to head and <code>0</code> to tail,
       so that we can use the <code>rand-int</code> function to simulate a single toss.</p>
 
     <div class="prog">
@@ -53,8 +53,9 @@
 
     <h2>Functional Inquiry</h2>
 
-    <p>Now we would want to answer some questions about the data gathered from <code>N</code> tosses, like how many heads were generated
-      by the experiment? The higher-order function <code>reduce</code> can help us here:</p>
+    <p>Now we would want to answer some questions about the data gathered from all those tosses, like how many heads were generated
+      by the experiment? The higher-order function <a href="https://clojuredocs.org/clojure.core/reduce" target="_blank"><code>reduce</code></a>
+      can help us here:</p>
 
     <div class="prog">
       <pre><code>
@@ -65,9 +66,9 @@
 
     <p><b>Note</b> You may get a different result, as the simulation includes random values.</p>
 
-    <p>It is well-known that the ratio of the number of heads (or tails) to the total number of tosses approaches <code>0.5</code> as
+    <p>It is well-known that the ratio of the number of heads (or tails) to the total number of tosses will approach <code>0.5</code> as
       the number of tosses increases. To test this out, we first need a version of <code>reduce</code> that returns a sequence of cumulative
-      results. Let's define this function:</p>
+      results. The definition of this function follows:</p>
 
     <div class="prog">
       <pre><code>
@@ -78,7 +79,13 @@
       </code></pre>
     </div>
 
-    <p>Let's call <code>reduce</code> and <code>cumulate</code> on the same inputs and see the difference in their outputs:</p>
+    <p><code>Cumulate</code> applies the function <code>f</code> to <code>init</code> and the first element of <code>xs</code>.
+      The result (<code>r</code>) becomes the head of a lazy sequence. The tail of this sequence is constructed by
+      a recursive call to <code>cumulate</code> with <code>r</code> being the value of <code>init</code>. This process continues
+      until <code>xs</code> runs out of values. The returned sequence will contain all intermediate results of the reduction of <code>xs</code>
+      by <code>f</code>.</p>
+
+    <p>Let's call <code>reduce</code> and <code>cumulate</code> on the same inputs and see how the outputs differ:</p>
 
     <div class="prog">
       <pre><code>
@@ -89,45 +96,66 @@
       </code></pre>
     </div>
 
-    <p>As we see, <code>cumulate</code> also returns the result of reduction at each step. We can use this function to report
-      the cumulative sum of heads at each toss. We can achieve this by calling <code>cumulate</code> on the result of <code>tosses</code>:</p>
+    <p>The value returned by <code>reduce</code> and the final value in the sequence returned by <code>cumulate</code> are the same.
+      In addition, <code>cumulate</code> also captures the intermediate values of the reduction.</p>
+
+    <p>Cumulative summing of sequences can be expressed by the following partial application of <code>cumulate</code>:</p>
+
+    <div class="prog">
+      <pre><code>
+> (<span class="kw">def</span> sums (partial cumulate + 0))
+      </code></pre>
+    </div>
+
+    <p>We have all the tools necessary to experiment and find out if heads appear with a probability of <code>0.5</code> if a coin is
+      tossed for a sufficiently large number of times. The following program will conduct this experiment for us:</p>
 
     <div class="prog">
       <pre><code>
 > (<span class="kw">def</span> xs (take 3000 (tosses)))
-> (<span class="kw">def</span> ch (partial cumulate + 0))
-> (<span class="kw">def</span> ss (ch xs))
+> (<span class="kw">def</span> ss (sums xs))
 > (<span class="kw">def</span> rs (map #(/ (float %1) %2) ss (range 1 3001)))
 > (drop 2500 rs)
 <span class="comment">;;=> (0.5041983206717313 0.504396482813749 0.5041949660407511 ...)
       </code></pre>
     </div>
 
-    <p>The ratio of heads indeed approach <code>0.5</code> with a sufficiently large number of coin-toss events.</p>
+    <p>First, <code>3000</code> tosses are made. The number of heads seen until each toss is found by calling <code>sums</code>.
+      The higher-order function <code>map</code> walks down this sequence, dividing each entry by the corresponding toss number
+      to produce a sequence of ratios.</p>
+
+    <p>As we see in the final output, the ratio of heads indeed approach <code>0.5</code>.</p>
 
     <p>There are other interesting information that we can derive from the data returned by <code>tosses</code>.
       For instance, can you design a function to report the excess of heads over tails for a particular toss?</p>
 
-    <p>The problem can be solved by finding the difference between the cumulative number of heads and the cumulative number of tails
-      for the specified toss. We can find the cumulative of tails by first "inverting" the tosses and then applying <code>cumulate</code> to
-      the result:</p>
+    <p>This problem can be solved by finding the difference between the cumulative number of heads and the cumulative number of tails
+      for the specified toss. We can find the cumulative of tails by first "inverting" the tosses and then applying <code>sums</code> to
+      the result. Here is the invert function:</p>
 
     <div class="prog">
       <pre><code>
+> (<span class="kw">defn</span> inv [xs]
+    (map #(if (zero? %) 1 0) xs))
+
 > (<span class="kw">def</span> xs (take 10 (tosses)))
 > xs
 <span class="comment">;;=> (0 0 0 1 1 1 0 0 1 0)</span>
-
-> (<span class="kw">defn</span> inv [xs]
-    (map #(if (zero? %) 1 0) xs))
 
 > (<span class="kw">def</span> ys (inv xs))
 > ys
 <span class="comment">;;=> (1 1 1 0 0 0 1 1 0 1)</span>
 
+      </code></pre>
+    </div>
+
+    <p>The function <code>excess</code> defined below, finds the difference between a sequence and its inverse:</p>
+
+    <div class="prog">
+      <pre><code>
 > (<span class="kw">defn</span> excess [xs n]
-    (<span class="kw">let</span> [hs (ch xs)
-	  ts (ch (inv xs))]
+    (<span class="kw">let</span> [hs (sums xs)
+	  ts (sums (inv xs))]
       (nth (map #(- %1 %2) hs ts) n)))
 
 > (excess xs 4)
@@ -139,7 +167,7 @@
       </code></pre>
     </div>
 
-    <p><b>Exercise 1</b> Write a function to report the first <code>n</code> excesses of heads over tails.</p>
+    <p><b>Exercise 1</b> Write a function to report the first <code>n</code> excesses of tails over heads.</p>
     <p><b>Exercise 2</b> Use <a href="http://incanter.org/" target="_blank">Incanter</a> to visualize the various
       information you gather about coin tosses. To start, you may plot the ratios obtained from the first 3000 tosses.</p>
 
