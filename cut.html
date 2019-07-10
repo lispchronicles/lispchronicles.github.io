@@ -108,7 +108,8 @@
         a1 (<span class="kw">if</span> arg-templ?
              (gensym)
              arg)]
-    (<span class="kw">loop</span> [args args
+     <span class="comment">;; collect paremeter and argument lists in a single pass over `args`</span>
+     (<span class="kw">loop</span> [args args
             params (<span class="kw">if</span> arg-templ? [a1] [])
             final-args [a1]]
       (<span class="kw">if</span> (seq args)
@@ -120,7 +121,7 @@
                      (conj params p)
                      (conj final-args p)))
             
-            (= a <span class="sym">'...</span>)
+            (= a <span class="sym">'...</span>) <span class="comment">; ignore rest of `args`</span>
             (<span class="kw">let</span> [xs (gensym)
                   params (conj params <span class="sym">'&</span> xs)]
               `(<span class="kw">fn</span> ~params (apply ~f ~@final-args ~xs)))
