@@ -40,7 +40,7 @@
       are unknown at the time of calling <code>partial</code>? It should be possible to specify the unknown values as
       "empty-slots", which can be filled-in later at the time of the final function application.</p>
 
-    <p>Let's assume that we have an operator that can construct such no-sequential partials for us.
+    <p>Let's assume that we have an operator that can construct such non-sequential partials for us.
       We shall call this abstraction as <code>cut</code> because it knows how to deal with segmented argument lists. A slot for
       a missing argument will be represented by the empty vector literal - <code>[]</code>.</p>
 
@@ -98,7 +98,7 @@
 
     <p>The <code>cut</code> operator is defined as a macro that walks down the partial argument list looking for slots.
       It constructs a parameter list that contain entries for each slot. An argument list is also prepared with the partial arguments and
-      variables from the parameter list inserted at proper order. As the last step, a new function is created which will call the
+      variables from the parameter list inserted in proper order. As the last step, a new function is created which will call the
       partially-applied function with the fully-constructed argument list.</p>
     
     <div class="prog">
@@ -148,7 +148,7 @@
     <h4>References</h4>
     <p>The <code>cut</code> operator was inspired by
       a <a href="https://www.gnu.org/software/kawa/Partial-application.html#idm139913600510608" target="_blank">similar abstraction</a>
-      from Kawa-Scheme.</p>
+      in Kawa-Scheme.</p>
     <hr></hr>
 
     <p align="left">
