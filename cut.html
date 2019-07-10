@@ -115,7 +115,7 @@
       (<span class="kw">if</span> (seq args)
         (<span class="kw">let</span> [a (first args)]
           (<span class="kw">cond</span>
-            (= arg <span class="sym">'<></span>)
+            (= a <span class="sym">'<></span>)
             (<span class="kw">let</span> [p (gensym)]
               (<span class="kw">recur</span> (rest args)
                      (conj params p)
