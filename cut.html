@@ -41,10 +41,12 @@
       "empty-slots", which can be filled-in later at the time of the final function application.</p>
 
     <p>Let's assume that we have an operator that can construct such no-sequential partials for us.
-      We shall call this abstraction as <code>cut</code> because it knows how to deal with segmented argument lists. An empty-slot will be
-      represented by the empty vector literal - <code>[]</code>.</p>
+      We shall call this abstraction as <code>cut</code> because it knows how to deal with segmented argument lists. A slot for
+      a missing argument will be represented by the empty vector literal - <code>[]</code>.</p>
 
-    <p>First we shall look at a few examples of using <code>cut</code>, then we will look at the actual implementation of this operator.</p>
+    <p>First we shall look at a few examples of using <code>cut</code>, then we will look at its actual implementation.</p>
+
+    <h4>Some Examples</h4>
 
     <p>The following program shows that, at the basic level, <code>cut</code> behaves exactly like <code>partial</code>:</p>
     
@@ -81,7 +83,7 @@
       </code></pre>
     </div>
 
-    <p>Finally, we introduce one more pattern - <code>...</code> - that will allow the partial function to accept an arbitrary number of
+    <p>Finally, we introduce the <i>rest</i> pattern (<code>...</code>) that will allow the partial function to accept an arbitrary number of
       arguments at the tail of the argument-list:</p>
 
     <div class="prog">
@@ -92,12 +94,12 @@
       </code></pre>
     </div>
 
+    <h4>Implementation</h4>
+
     <p>The <code>cut</code> operator is defined as a macro which walks down the partial argument list looking for slots.
       It constructs a parameter list that contain entries for each slot. An argument list is also prepared with the partial arguments and
       variables from the parameter list inserted at proper order. As the last step, a new function is created which will call the
       partially-applied function with the fully-constructed argument list.</p>
-
-    <p>The complete definition of the <code>cut</code> macro is shown below:</p>
     
     <div class="prog">
       <pre><code>
@@ -150,7 +152,7 @@
     <hr></hr>
 
     <p align="left">
-      <a href="https://github.com/lispchronicles/lispchronicles.github.io/issues/5" target="_blank">Comments</a> | <a href="index.html">Home</a>
+      <a href="index.html">Home</a>
     </p>
 
   </body>
