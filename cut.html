@@ -42,7 +42,7 @@
 
     <p>Let's assume that we have an operator that can construct such non-sequential partials for us.
       We shall call this abstraction as <code>cut</code> because it knows how to deal with segmented argument lists. A slot for
-      a missing argument will be represented by the empty vector literal - <code>[]</code>.</p>
+      a missing argument will be represented by the pattern <code><></code>.</p>
 
     <p>First we shall look at a few examples of using <code>cut</code>, then we will look at its actual implementation.</p>
 
@@ -63,7 +63,7 @@
 
     <div class="prog">
       <pre><code>
-(<span class="kw">def</span> f (cut list 1 [] 2))
+(<span class="kw">def</span> f (cut list 1 <> 2))
 (f 10)
 <span class="comment">;;=> (1 10 2)</span>
       </code></pre>
@@ -73,11 +73,11 @@
 
     <div class="prog">
       <pre><code>
-(<span class="kw">def</span> f (cut list 1 [] 2 [] [] 3))
+(<span class="kw">def</span> f (cut list 1 <> 2 <> <> 3))
 (f 10 20 30)
 <span class="comment">;;=> (1 10 2 20 30 3)</span>
 
-(<span class="kw">def</span> f (cut list [] 1 [] 2 [] [] 3))
+(<span class="kw">def</span> f (cut list <> 1 <> 2 <> <> 3))
 (f 10 20 30 40)
 <span class="comment">;;=> (10 1 20 2 30 40 3)</span>
       </code></pre>
@@ -88,7 +88,7 @@
 
     <div class="prog">
       <pre><code>
-(<span class="kw">def</span> f (cut list [] 1 [] 2 [] [] 3 ...))
+(<span class="kw">def</span> f (cut list <> 1 <> 2 <> <> 3 ...))
 (f 10 20 30 40 50 60 70 80)
 <span class="comment">;;=> (10 1 20 2 30 40 3 50 60 70 80)</span>
       </code></pre>
@@ -104,17 +104,17 @@
     <div class="prog">
       <pre><code>
 (<span class="kw">defmacro</span> cut [f arg & args]
-  (<span class="kw">let</span> [arg-templ? (empty-vec? arg)
-        a1 (if arg-templ?
+  (<span class="kw">let</span> [arg-templ? (= arg <span class="sym">'<></span>)
+        a1 (<span class="kw">if</span> arg-templ?
              (gensym)
              arg)]
     (<span class="kw">loop</span> [args args
-           params (<span class="kw">if</span> arg-templ? [a1] [])
-           final-args [a1]]
+            params (<span class="kw">if</span> arg-templ? [a1] [])
+            final-args [a1]]
       (<span class="kw">if</span> (seq args)
         (<span class="kw">let</span> [a (first args)]
           (<span class="kw">cond</span>
-            (empty-vec? a)
+            (= arg <span class="sym">'<></span>)
             (<span class="kw">let</span> [p (gensym)]
               (<span class="kw">recur</span> (rest args)
                      (conj params p)
@@ -132,16 +132,6 @@
         (<span class="kw">if</span> (seq params)
           `(<span class="kw">fn</span> ~params (~f ~@final-args))
           `(<span class="kw">fn</span> [& ~(symbol <span class="str">"xs"</span>)] (apply ~f ~@final-args ~(symbol <span class="str">"xs"</span>))))))))
-      </code></pre>
-    </div>
-
-    <p>The utility function <code>empty-vec?</code> is defined as follows:</p>
-
-    
-    <div class="prog">
-      <pre><code>
-(<span class="kw">defn</span> empty-vec? [x]
-    (<span class="kw">and</span> (vector? x) (empty? x)))
       </code></pre>
     </div>
     
