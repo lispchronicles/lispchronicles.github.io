@@ -4,6 +4,9 @@ body {
     font-size: 18px;
 }
 
+p{font-size:120%;line-height:1.2;}
+li{font-size:120%;line-height:1.2;}
+
 ol {
     width: 60%;
 }
